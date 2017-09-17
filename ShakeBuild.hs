@@ -47,6 +47,10 @@ main = shakeArgs shakeOptions{shakeFiles="_build", shakeChange=ChangeModtime} $ 
          --   Other haddock files will be built at same time, so wanting the main file is enough
          --   TODO: haddock?
          --, "_build/haddock/index.html"
+         -- Example / test output from gnuplot
+         --  This makes it easier to modify the gnuplot file
+         , "_build/gnuplot_test/total_week_time_linechart.png"
+         , "_build/gnuplot_test/total_week_time_stacked_linechart.png"
          ]
 
     phony "clean" $ do
@@ -73,4 +77,7 @@ main = shakeArgs shakeOptions{shakeFiles="_build", shakeChange=ChangeModtime} $ 
         need [ascii]
         cmd "asciidoctor-diagram --out-file" [out] [ascii]
 
+    -- Build the test gnuplot graphs
+    "_build/gnuplot_test/*.png" %>
+        cmd "gnuplot -c graph.gnuplot ./test_intermediate_timesheet.csv ./_build/gnuplot_test/"
 
