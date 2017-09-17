@@ -1,0 +1,8 @@
+#!/bin/sh
+# 
+# This is the main Timesheet Analyzer program, which coordinates the other
+# components.
+#
+# Author: Matthew Todd
+# Date: 2017-09-16
+

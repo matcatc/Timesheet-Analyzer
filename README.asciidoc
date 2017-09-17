@@ -1,0 +1,254 @@
+Timesheet Analyzer
+==================
+:author: Matthew Todd
+:date: 2017-09-16
+:toc:
+:toclevel: 4
+:numbered:
+
+
+== Introduction
+
+Timesheet Analyzer is a simple tool to help analyze timesheets.
+It takes in CSV file(s), which it does some number crunching on, and then generates graphs and a simple report.
+
+Users first need to fill in their CSV file with their time.
+The format of this CSV file follows this format:
+
+.CSV Timesheet Format
+----
+# Comments start with #
+#week identifier, charge category, Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday
+----
+
+.Example CSV Timesheet
+----
+# Comments start with #
+#week identifier, charge category, Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday
+# ww1737
+ww1737 , labor    , 8 , 8 , 8 , 8 , 8 , 0 , 0
+ww1737 , sick     , 0 , 0 , 0 , 0 , 0 , 0 , 0
+ww1737 , vacation , 0 , 0 , 0 , 0 , 0 , 0 , 0
+ww1737 , holiday  , 0 , 0 , 0 , 0 , 0 , 0 , 0
+ww1737 , comp     , 0 , 0 , 0 , 0 , 0 , 0 , 0
+# ww1738
+ww1738 , labor    , 0 , 0 , 0 , 0 , 0 , 0 , 0
+ww1738 , sick     , 0 , 0 , 0 , 0 , 0 , 0 , 0
+ww1738 , vacation , 0 , 0 , 0 , 8 , 8 , 0 , 0
+ww1738 , holiday  , 8 , 8 , 8 , 0 , 0 , 0 , 0
+ww1738 , comp     , 0 , 0 , 0 , 0 , 0 , 0 , 0
+# ww1739
+ww1738 , labor    , 4 , 0 , 8 , 8 , 8 , 0 , 0
+ww1738 , sick     , 4 , 8 , 0 , 0 , 0 , 0 , 0
+ww1738 , vacation , 0 , 0 , 0 , 0 , 0 , 0 , 0
+ww1738 , holiday  , 0 , 0 , 0 , 0 , 0 , 0 , 0
+ww1738 , comp     , 0 , 0 , 0 , 0 , 0 , 0 , 0
+----
+
+In the above example scenario, we have 3 separate weeks listed.
+In work week 37 of 2017 (`ww1737`), we worked a full 40 hour work week.
+In work week 38, Monday, Tuesday, and Wednesday were holidays, and we took the rest of the week (Thursday and Friday) off as a vacation.
+In work week 39, we came in Monday for half a day, before going home sick for the rest of the day.
+We then took Tuesday off sick to recuperate, before working the rest of the week.
+
+This is a somewhat trivial example which shows some of the capabalities.
+A few things to note:
+
+* Time spent does not need to add up to 8 hours.
+Put the time you actually worked, that way the analysis will be more useful for you.
+
+* There are multiple lines for each week, thereby easily allowing you to specify and see where the time was spent.
+
+* For now the charge categories are hardcoded for implementation simplicity, although I would like to make them configurable in the future.
+
+
+== Informal Requirements
+
+This is a list of informally specified requirements.
+
+.Requirements
+[options="header", cols="1,7,7"]
+|===
+| ID
+| Description
+| Rationale / Comment
+
+| 001
+| Input files must be in a CSV file format.
+| Makes interoperating with other programs (e.g.: spreadsheets easier). Makes it easy to edit the input files as well.
+
+| 002
+| Input files must support different charge categories.
+| Makes analyzing where the time is spent easier, rather than just having a total "work time" number.
+
+| 003
+| Input files must allow for comments.
+| Users may want to document their timesheets with notes for themselves.
+
+| 004
+| If an input file is missing a category, then it's equivalent to the category having all 0s for that week.
+| Ease of future extensibility; ease of use.
+
+| 005
+| Weeks are specified in the input file using the ISO 8601 standard. Ex: `ww1736`.
+| Standard.
+
+| 006
+| Generate graphs for the various "metrics" in a PNG format.
+| Graphs make quickly seeing trends / behavior of the metric easier.
+
+| 007
+| Generate a simple HTML report with the graph images included.
+| Makes seeing all the graphs at once easier.
+
+| 008
+| Compute the following metrics: total time worked per day, total time worked per week.
+| User inputs just the parts, and we compute the totals for them (ease of use).
+
+| 009
+| Input time is in hours. Fractional hours allowed (e.g: 3.75).
+| Allow users to be more precise than just hours, if desired.
+
+| 010
+| Generate the following graphs: line chart of total week time with lines for the charge categories (breakdown of the total), box plot for total day time for each day, histogram of total week work, histogram of time spent for charge categories in total, TODO.
+| 
+
+| 011
+| Allow user some way of specifying a time range to analyze.
+| So we don't analyze all of the weeks available, but just a subset.
+
+| 012
+| TODO: configuration of charge categories.
+| Flexibility and configurability to suit user's needs.
+
+| 013
+| Temporary / intermediate CSV file is an interface (meaning format of the file should be versioned, etc.)
+| If we want to allow users to use it as part of their own analysis / tooling, format should be consistent / reliable.
+|===
+
+
+== Technical Background
+
+Here is a schematic view of what Timesheet Analyzer does:
+
+.Data Flow
+[ditaa]
+....
+                                                         +---------------------+
+                                                         | Gnuplot             |
+                                                         | Graph Specification |
+                                                         | {d} cBLU            |
+                                                         +---------------------+
+                                                            |
+                                                            |
+                                                            v
++-----------+    +--------------+    +--------------+    +---------+    +--------+
+| Timesheet |--->| Computations |--->| Intermediate |--->| Gnuplot |--->| Graphs |
+| CSV       |    | and          |    | Timesheet    |    +---------+    | PNG    |
+|{d} cGRE   |    | Analysis cBLU|    | CSV {d} cPNK |                   | {d}cPNK|
++-----------+    +--------------+    +--------------+                   +--------+
+                                                                            |
++----------+                +---------------+                               |
+| Report   |--------------->| Asciidoc(tor) |<------------------------------+
+| Template |                +---------------+ 
+| {d} cBLU |                        |
++----------+                        |
+                                    |
+                                    v
+                                +--------+
+                                | Report |
+                                | HTML   |
+                                | {d}cPNK|
+                                +--------+
+
+Legend
++--------------------------------+
+| Part of Timesheet Analyzer cBLU|
++--------------------------------+
+| User Input                 cGRE|
++--------------------------------+
+| Generated Files            cPNK|
++--------------------------------+
+....
+
+I think it's relatively self-explanatory what is occurring, but I want to explain the reasoning behind why I chose to set it up this way.
+First, you'll notice that the there are several processing steps at work here.
+I.e.: Timesheet Analyzer is _not_ just a single program, but several programs working in concert.
+I made this choice for several reasons:
+
+* Use of existing software: asciidoc(tor) and gnuplot
+* Separation of concerns: computing metrics, generating graphs, and generating the final report.
+* Formatting of the report is simple asciidoc
+* Generation and formatting of the graphs is plain gnuplot code
+* Allows for others to re-use or more easily extend one of these components
+* More "unix-like"
+
+Second, the above is a data pipeline.
+Meaning that we can do standard things that we normally do with such pipelines.
+Example: use a build system (`make`-like thing) in order to manage it.
+So Timesheet Analyzer is essentially a build system, where there are three inputs:
+
+* User's timesheet file
+* Gnuplot file (graph template)
+* Asciidoc file (report template)
+
+And three outputs:
+
+* Temporary timesheet file - which user can pipe to their own programs
+* Graph images - which can be viewed individually or printed
+* HTML report - the main output
+
+In practice users will only modify their timesheet file, and will mainly only be interested in the final HTML report or occasionally the graph image files.
+
+Here is a brief overview of the files in this project:
+
+* I chose to write the "Computation and Analysis" ("comp" for short) in Haskell, although I imagine Python, R, and a few other languages would have worked well.
+See `Comp.hs`.
+
+* Generating the graphs is done via http://gnuplot.info[Gnuplot].
+See `graph.gnuplot`.
+
+* Generating the report is done via http://asciidoctor.org[Asciidoctor] or http://www.methods.co.nz/asciidoc/[Asciidoc] (same as this README).
+See `report.asciidoc`.
+
+* And for the top-level program, I chose to use basic shell script.
+See `timesheet_analyzer`
+** However, I am considering eventually switching over to Haskell with the http://shakebuild.com[Shake] build system (same used to build this project as a whole.)
+So that the top level program would literally be a build system.
+But I have concerns as to usability in this scenario, and want to focus on delivering what really matters first.
+
+* Also included is a template user timesheet: `timesheet_template.csv`.
+
+
+== Pre-requisites for Using
+
+* Timesheet Analyzer is installed
+* http://gnuplot.info[Gnuplot] is installed
+* http://asciidoctor.org[Asciidoctor] or http://www.methods.co.nz/asciidoc/[Asciidoc] is installed
+
+When installing via the Debian package, dependencies should be automatically handled.
+TODO: verify / update this statement once we've created the Debian package.
+
+== Pre-requisites for Building
+
+* ghc
+* TODO: Shake
+* Asciidoctor is installed, with http://asciidoctor.org/docs/asciidoctor-diagram/[asciidoctor-diagram] extension
+
+== Version History
+
+* dev :: Creation
+
+== License
+
+Currently the code / project is not licensed, meaning that it is copyrighted code, etc.
+However, once I've gotten everything working and I'm ready, I plan on GPL'ing it.
+But for now I will focus on implementing it, since that's what really matters.
+If you see this and I haven't GPL'd it yet, please feel free to reach out to me.
+
+== Website
+
+Official Website :: TODO
+
+Github :: TODO (once GPL'd)
+

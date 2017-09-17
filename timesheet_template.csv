@@ -1,0 +1,21 @@
+# Comments start with #
+#week identifier, charge category, Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday
+# ww1737
+ww1737 , labor    , 0 , 0 , 0 , 0 , 0 , 0 , 0
+ww1737 , sick     , 0 , 0 , 0 , 0 , 0 , 0 , 0
+ww1737 , vacation , 0 , 0 , 0 , 0 , 0 , 0 , 0
+ww1737 , holiday  , 0 , 0 , 0 , 0 , 0 , 0 , 0
+ww1737 , comp     , 0 , 0 , 0 , 0 , 0 , 0 , 0
+# ww1738
+ww1738 , labor    , 0 , 0 , 0 , 0 , 0 , 0 , 0
+ww1738 , sick     , 0 , 0 , 0 , 0 , 0 , 0 , 0
+ww1738 , vacation , 0 , 0 , 0 , 0 , 0 , 0 , 0
+ww1738 , holiday  , 0 , 0 , 0 , 0 , 0 , 0 , 0
+ww1738 , comp     , 0 , 0 , 0 , 0 , 0 , 0 , 0
+# ww1739
+ww1738 , labor    , 0 , 0 , 0 , 0 , 0 , 0 , 0
+ww1738 , sick     , 0 , 0 , 0 , 0 , 0 , 0 , 0
+ww1738 , vacation , 0 , 0 , 0 , 0 , 0 , 0 , 0
+ww1738 , holiday  , 0 , 0 , 0 , 0 , 0 , 0 , 0
+ww1738 , comp     , 0 , 0 , 0 , 0 , 0 , 0 , 0
+
