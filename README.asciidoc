@@ -124,6 +124,10 @@ This is a list of informally specified requirements.
 | 013
 | Temporary / intermediate CSV file is an interface (meaning format of the file should be versioned, etc.)
 | If we want to allow users to use it as part of their own analysis / tooling, format should be consistent / reliable.
+
+| 014
+| Allow user to provide multiple timesheet CSV files as input.
+| User can then organize their timesheets how they like (e.g.: one big file, one file per year, one file per quarter, one file per month, one file per week).
 |===
 
 
