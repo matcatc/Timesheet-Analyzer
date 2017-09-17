@@ -25,28 +25,28 @@ The format of this CSV file follows this format:
 ----
 # Comments start with #
 #week identifier, charge category, Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday
-# ww1737
-ww1737 , labor    , 8 , 8 , 8 , 8 , 8 , 0 , 0
-ww1737 , sick     , 0 , 0 , 0 , 0 , 0 , 0 , 0
-ww1737 , vacation , 0 , 0 , 0 , 0 , 0 , 0 , 0
-ww1737 , holiday  , 0 , 0 , 0 , 0 , 0 , 0 , 0
-ww1737 , comp     , 0 , 0 , 0 , 0 , 0 , 0 , 0
-# ww1738
-ww1738 , labor    , 0 , 0 , 0 , 0 , 0 , 0 , 0
-ww1738 , sick     , 0 , 0 , 0 , 0 , 0 , 0 , 0
-ww1738 , vacation , 0 , 0 , 0 , 8 , 8 , 0 , 0
-ww1738 , holiday  , 8 , 8 , 8 , 0 , 0 , 0 , 0
-ww1738 , comp     , 0 , 0 , 0 , 0 , 0 , 0 , 0
-# ww1739
-ww1738 , labor    , 4 , 0 , 8 , 8 , 8 , 0 , 0
-ww1738 , sick     , 4 , 8 , 0 , 0 , 0 , 0 , 0
-ww1738 , vacation , 0 , 0 , 0 , 0 , 0 , 0 , 0
-ww1738 , holiday  , 0 , 0 , 0 , 0 , 0 , 0 , 0
-ww1738 , comp     , 0 , 0 , 0 , 0 , 0 , 0 , 0
+# 201737
+201737 , labor    , 8 , 8 , 8 , 8 , 8 , 0 , 0
+201737 , sick     , 0 , 0 , 0 , 0 , 0 , 0 , 0
+201737 , vacation , 0 , 0 , 0 , 0 , 0 , 0 , 0
+201737 , holiday  , 0 , 0 , 0 , 0 , 0 , 0 , 0
+201737 , comp     , 0 , 0 , 0 , 0 , 0 , 0 , 0
+# 201738
+201738 , labor    , 0 , 0 , 0 , 0 , 0 , 0 , 0
+201738 , sick     , 0 , 0 , 0 , 0 , 0 , 0 , 0
+201738 , vacation , 0 , 0 , 0 , 8 , 8 , 0 , 0
+201738 , holiday  , 8 , 8 , 8 , 0 , 0 , 0 , 0
+201738 , comp     , 0 , 0 , 0 , 0 , 0 , 0 , 0
+# 201739
+201738 , labor    , 4 , 0 , 8 , 8 , 8 , 0 , 0
+201738 , sick     , 4 , 8 , 0 , 0 , 0 , 0 , 0
+201738 , vacation , 0 , 0 , 0 , 0 , 0 , 0 , 0
+201738 , holiday  , 0 , 0 , 0 , 0 , 0 , 0 , 0
+201738 , comp     , 0 , 0 , 0 , 0 , 0 , 0 , 0
 ----
 
 In the above example scenario, we have 3 separate weeks listed.
-In work week 37 of 2017 (`ww1737`), we worked a full 40 hour work week.
+In work week 37 of 2017 (`201737`), we worked a full 40 hour work week.
 In work week 38, Monday, Tuesday, and Wednesday were holidays, and we took the rest of the week (Thursday and Friday) off as a vacation.
 In work week 39, we came in Monday for half a day, before going home sick for the rest of the day.
 We then took Tuesday off sick to recuperate, before working the rest of the week.
@@ -90,7 +90,7 @@ This is a list of informally specified requirements.
 | Ease of future extensibility; ease of use.
 
 | 005
-| Weeks are specified in the input file using the ISO 8601 standard. Ex: `ww1736`.
+| Weeks are specified in the input file using the ISO 8601 standard. Ex: `201736`.
 | Standard.
 
 | 006
