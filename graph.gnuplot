@@ -24,10 +24,10 @@ print "output_dir = ".output_dir
 
 # Ensure we're at a known good starting environment
 reset
-clear
+# Don't do clear here since that will create a popup window
 
 # TODO: what size to use?
-set terminal png size 640,480
+set terminal pngcairo size 640,480
 
 # Set colors for each category, which can be referenced by plot commands.  So
 # as to keep colors consistent accross plots.
@@ -38,6 +38,7 @@ set style line 3 lc rgb 'red' lt 1 lw 2          # sick
 set style line 4 lc rgb 'turquoise' lt 1 lw 2    # vacation
 set style line 5 lc rgb 'green' lt 1 lw 2        # holiday
 set style line 6 lc rgb 'yellow' lt 1 lw 2       # comp
+set style line 7 lc rgb 'purple' lt 1 lw 2       # threshold / annotations
 
 
 # X axis is the time domain. Different units for different graphs though.
@@ -53,6 +54,8 @@ set ylabel "hours"
 set yrange [0:]
 # Setup a grid
 set grid
+# Have ytics be in 8 hour increments (since a normal working day is 8 hours)
+set ytics 8
 
 
 # One input file for all graphs (the intermediate CSV file)
@@ -70,13 +73,18 @@ set output output_dir."/total_week_time_linechart.png"
 set title "Total Week Time"
 set xlabel "Week"
 
-# Separate lines - no stacking
-plot input_filename using 1:49 title "total" with linespoints ls 1,\
-    "" using 1:44 title "labor" with lines ls 2,\
-    "" using 1:45 title "sick" with lines ls 3,\
-    "" using 1:46 title "vacation" with lines ls 4,\
-    "" using 1:47 title "holiday" with lines ls 5,\
-    "" using 1:48 title "comp" with lines ls 6
+# Smoothed separate lines - no stacking
+# Use smoothing so the graph is a little easier on the eyes and to see. use
+# mcsplines so that the lines go through all data points and don't "overshoot"
+# (as csplines would).
+plot input_filename using 1:49 title "total" smooth mcsplines with lines ls 1,\
+    "" using 1:44 title "labor" smooth mcsplines with lines ls 2,\
+    "" using 1:45 title "sick" smooth mcsplines with lines ls 3,\
+    "" using 1:46 title "vacation" smooth mcsplines with lines ls 4,\
+    "" using 1:47 title "holiday" smooth mcsplines with lines ls 5,\
+    "" using 1:48 title "comp" smooth mcsplines with lines ls 6,\
+    40 title "40" with lines ls 7,\
+    "" using 1:49 title "" with points ls 1
 
 
 #################################################
@@ -87,17 +95,44 @@ set title "Total Week Time"
 set xlabel "Week"
 
 # stacked line chart
+# fill from x axis since we won't have any starting/ending weeks with "0" hours
 firstcol=44
 cumulated(i)=((i>firstcol)?column(i)+cumulated(i-1):(i==firstcol)?column(i):1/0)
-plot input_filename using 1:(cumulated(48)) title "comp" with filledcurves ls 6,\
-    "" using 1:(cumulated(47)) title "holiday" with filledcurves ls 5,\
-    "" using 1:(cumulated(46)) title "vacation" with filledcurves ls 4,\
-    "" using 1:(cumulated(45)) title "sick" with filledcurves ls 3,\
-    "" using 1:(cumulated(44)) title "labor" with filledcurves ls 2,\
-    "" using 1:49 title "total" with linespoints ls 1
+plot input_filename using 1:(cumulated(48)) title "comp" with filledcurves x ls 6,\
+    "" using 1:(cumulated(47)) title "holiday" with filledcurves x ls 5,\
+    "" using 1:(cumulated(46)) title "vacation" with filledcurves x ls 4,\
+    "" using 1:(cumulated(45)) title "sick" with filledcurves x ls 3,\
+    "" using 1:(cumulated(44)) title "labor" with filledcurves x ls 2,\
+    "" using 1:49 title "total" with linespoints ls 1,\
+    40 title "40" with lines ls 7
 
 
 #################################################
-# Plot 3: 
+# Plot 3: Smoothed linechart of labor showing "running average" of labor time.
+
+set output output_dir."/average_week_labor_linechart.png"
+set title "Averaged/Smoothed Week Labor Time"
+set xlabel "Week"
+
+plot input_filename using 1:44 title "smoothed labor" smooth bezier with lines ls 2,\
+    "" using 1:44 title "labor" with points ls 2,\
+    40 title "40" with lines ls 7
+
+
+#################################################
+# Plot 4: Smoothed linechart of total time showing "running average" of total time.
+
+set output output_dir."/average_week_total_linechart.png"
+set title "Averaged/Smoothed Week Total Time"
+set xlabel "Week"
+
+plot input_filename using 1:49 title "smoothed total" smooth bezier with lines ls 1 lw 2,\
+    "" using 1:49 title "total" with points ls 1,\
+    40 title "40" with lines ls 7
+#    "" using 1:49 title "total" smooth mcsplines with lines ls 1 lw 1,\
+
+
+#################################################
+# Plot 5: TODO
 
 # TODO: implement more graphs
