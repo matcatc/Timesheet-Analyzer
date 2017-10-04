@@ -110,8 +110,8 @@ This is a list of informally specified requirements.
 | Allow users to be more precise than just hours, if desired.
 
 | 010
-| Generate the following graphs: line chart of total week time with lines for the charge categories (breakdown of the total), box plot for total day time for each day, histogram of total week work, histogram of time spent for charge categories in total, TODO.
-| 
+| Generate a line chart of total week time with lines for the charge categories (breakdown of the total). Also a "stacked" version.
+| See all charge categories in one graph. Stacked version shows how the charge categories add up to the total.
 
 | 011
 | Allow user some way of specifying a time range to analyze.
@@ -128,10 +128,25 @@ This is a list of informally specified requirements.
 | 014
 | Allow user to provide multiple timesheet CSV files as input.
 | User can then organize their timesheets how they like (e.g.: one big file, one file per year, one file per quarter, one file per month, one file per week).
+
+| 015
+| Generate a separate line chart for an "averaged" or "smoothed" for each charge category and for the total.
+| Allows for seeing a general trend in the charge categories.
+
+| 016
+| Generate a "box plot" or "candlestick plot" for total time for each day (one plot with candlesticks for each day).
+| See the statistical information (mean, median, min, max, std deviation) for days. Helps see if there's any variations between days.
+
+| 017
+| Generate a histogram per charge category and total week work. Ideally also include labels in the graph for mean, median, std deviation, etc.
+| See what the varition / statistics are for total time spent per week. Likewise for each charge category.
+
 |===
 
 
 == Technical Background
+
+=== Data Flow
 
 Here is a schematic view of what Timesheet Analyzer does:
 
@@ -203,6 +218,67 @@ And three outputs:
 * HTML report - the main output
 
 In practice users will only modify their timesheet file, and will mainly only be interested in the final HTML report or occasionally the graph image files.
+
+
+=== Computation and Analysis Component Overview
+
+The Computation and Analysis Component ("comp" for short) is responsible for taking in the user provided timesheet file(s) and generating a single intermediate timesheet file for use in generating the graphs.
+In short, it's a data processesing pipeline, which looks like this:
+
+.Comp Component Dataflow
+[graphviz]
+----
+digraph G
+{ 
+    rankdir=TB;
+    node [shape=record]
+
+    legend [label="Step|Haskell Data Struct|Number of elements"]
+
+    // Defining the nodes (and their attributes)
+    input_timesheets [label="Input timesheets|[Filename]|num_files"]
+    list_of_lines [label="List of lines|[String]|num_weeks * num_categories"]
+    converted_data_struct_per_week [label="Converted to data struct for week|[DataStruct]|num_weeks * num_categories"]
+    filter_empty [label="Filter empty|[DataStruct]|num_weeks * num_categories"]
+    group_by_week [label="Group by week|[[DataStruct]]|num_weeks [num_categories]"]
+    merge_per_week [label="Merge per week|[DataStruct]|num_weeks"]
+    compute_weekly_metrics [label="Compute weekly metrics|[DataStruct]|num_weeks"]
+    sort_weeks [label="Sort Weeks|[DataStruct]|num_weeks"]
+    prep_for_writing [label="Prep for writing|[String]|num_weeks"]
+    intermediate_timesheet [label="Intermediate timesheet|Filename|1"]
+
+    
+    // Defining the edges / relationships between nodes
+    input_timesheets -> list_of_lines -> converted_data_struct_per_week -> filter_empty -> group_by_week -> merge_per_week -> compute_weekly_metrics -> sort_weeks -> prep_for_writing -> intermediate_timesheet
+}
+----
+
+In this flow, `DataStruct` is a Haskell data type which represents all of the information about a particular week.
+I.e.: it includes all 7 days, all categories, and all computed metrics (e.g.: total for all categories and overall total).
+The key thing to note here is that this data type supports a `fold` or `union` operation which allows for merging two of them together.
+We leverage this in order to simplify things.
+
+When we read in the timesheet data from the multiple user provided timesheet files, the information for a particular week is spread out over multiple lines, which may or may not be contigious.
+So we convert each and every line into a data structure.
+Since one line only contains the data for one category (e.g.: labor but not sick, vacation, etc.), the data structure will be incomplete.
+But we'll have N of these data structs for N categories, which can then be merged to create a single data struct for the week.
+We then compute metrics (e.g.: total time per category and overall total) and merge this into the final data struct for the week.
+
+To make merging of data structures work, we group all of the data structures by week, thus giving us a list of data structs per week.
+Then we can simply do a fold on each of these list of weekly data structures and generate the final data structure.
+
+One minor detail is removal of "empty" weeks.
+Since weeks where there is no data (0 hours for all items) should not be included in the generated intermediate graph (as it'll throw off the generated graphs), we filter them out.
+Note: this is referring to having "empty" weeks at the beginning or end of the data in the intermediate timesheet.
+Since it's easy enough, we do the filtering at the start so that we can pare down our lists sooner and not process them (and waste time later on).
+
+TODO: is it ok to have missing data in the middle? Test and update this section accordingly.
+
+We also need to sort the weeks so that when generating the graphs the x axis goes in order of time.
+Since the time format we're using is "YYYYDD" (e.g.: "201738"), lexicographical sorting works fine for this.
+
+
+=== Files in this project
 
 Here is a brief overview of the files in this project:
 
