@@ -312,6 +312,7 @@ TODO: verify / update this statement once we've created the Debian package.
 == Pre-requisites for Building
 
 * ghc
+* libghc-cassava-dev
 * TODO: Shake
 * Asciidoctor is installed, with http://asciidoctor.org/docs/asciidoctor-diagram/[asciidoctor-diagram] extension
 
