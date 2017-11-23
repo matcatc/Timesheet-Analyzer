@@ -139,7 +139,15 @@ This is a list of informally specified requirements.
 
 | 017
 | Generate a histogram per charge category and total week work. Ideally also include labels in the graph for mean, median, std deviation, etc.
-| See what the varition / statistics are for total time spent per week. Likewise for each charge category.
+| See what the variation / statistics are for total time spent per week. Likewise for each charge category.
+
+| 018
+| Compute the earned comp time per week as `time_worked - 40`. Accumulate/sum the earned comp time over the weeks. Compute the net earned comp time (accumulated - time used) over the weeks.
+| Useful for tracking how much comp time is being earned and accrued. This is necessary since companies will not track this information.
+
+| 019
+| Generate a line chart for accumulated / accrued comp time over the course of the weeks. Include the final/current accrued comp time value in text (label or in the report).
+| See trends in comp time accrual. See how much comp time is available currently.
 
 |===
 
