@@ -37,7 +37,7 @@ set style line 2 lc rgb 'blue' lt 1 lw 2         # labor
 set style line 3 lc rgb 'red' lt 1 lw 2          # sick
 set style line 4 lc rgb 'turquoise' lt 1 lw 2    # vacation
 set style line 5 lc rgb 'green' lt 1 lw 2        # holiday
-set style line 6 lc rgb 'yellow' lt 1 lw 2       # comp
+set style line 6 lc rgb 'olive' lt 1 lw 2       # comp
 set style line 7 lc rgb 'purple' lt 1 lw 2       # threshold / annotations
 
 
@@ -133,6 +133,26 @@ plot input_filename using 1:49 title "smoothed total" smooth bezier with lines l
 
 
 #################################################
-# Plot 5: TODO
+# Plot 5: Weekly earned comp time
+
+set output output_dir."/week_earned_comp_time_linechart.png"
+set title "Weekly earned comp time"
+set xlabel "Week"
+
+plot input_filename using 1:50 title "earned comp time" with lines ls 6 lw 2
+
+#################################################
+# Plot 6: Weekly accrued comp time
+
+set output output_dir."/week_accrued_comp_time_linechart.png"
+set title "Weekly accrued comp time"
+set xlabel "Week"
+
+plot input_filename using 1:51 title "accrued comp time" with lines ls 6 lw 2
+
+
+
+#################################################
+# Plot 7: TODO
 
 # TODO: implement more graphs
