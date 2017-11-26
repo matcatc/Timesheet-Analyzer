@@ -142,8 +142,8 @@ This is a list of informally specified requirements.
 | See what the variation / statistics are for total time spent per week. Likewise for each charge category.
 
 | 018
-| Compute the earned comp time per week as `time_worked - 40`. Accumulate/sum the earned comp time over the weeks. Compute the net earned comp time (accumulated - time used) over the weeks.
-| Useful for tracking how much comp time is being earned and accrued. This is necessary since companies will not track this information.
+| Compute the earned comp time per week as `time_worked - 40` (i.e.: this may automatically go negative without comp time being explicitly entered in the timesheet for the week.) Accumulate/sum the earned comp time over the weeks to compute the "accrued comp time." Accrued comp time shall be computed as `accrued_previous_week + earned_this_week`.
+| Useful for tracking how much comp time is being earned and accrued. This is necessary since companies will not track this information. Allow for earned comp time to be negative so that we can use the accrued comp time to track where we are in hours worked vs the 40 hour threshold.
 
 | 019
 | Generate a line chart for accumulated / accrued comp time over the course of the weeks. Include the final/current accrued comp time value in text (label or in the report).

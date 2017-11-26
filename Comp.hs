@@ -122,8 +122,73 @@ emptyDataStruct = DataStruct
     }
 
 -- | Type representing a single line of CSV from an input file
--- TODO: rename to indicate its for an input file (and create a similar one for output file)?
-type CsvLine = (String, String, Float, Float, Float, Float, Float, Float, Float)
+type InputCsvLine =
+    ( String -- ^ Week ID
+    , String -- ^ category
+    , Float  -- ^ Monday hours
+    , Float  -- ^ Tuesday hours
+    , Float  -- ^ Wednesday hours
+    , Float  -- ^ Thursday hours
+    , Float  -- ^ Friday hours
+    , Float  -- ^ Saturday hours
+    , Float  -- ^ Sunday hours
+    )
+
+-- | Type representing a single line of CSV for the output file
+type OutputCsvLine =
+    ( String -- ^ Week ID
+    , Float  -- ^ Monday labor hours
+    , Float  -- ^ Monday sick hours
+    , Float  -- ^ Monday vacation hours
+    , Float  -- ^ Monday holiday hours
+    , Float  -- ^ Monday comp hours
+    , Float  -- ^ Monday total hours
+    , Float  -- ^ Tuesday labor hours
+    , Float  -- ^ Tuesday sick hours
+    , Float  -- ^ Tuesday vacation hours
+    , Float  -- ^ Tuesday holiday hours
+    , Float  -- ^ Tuesday comp hours
+    , Float  -- ^ Tuesday total hours
+    , Float  -- ^ Wednesday labor hours
+    , Float  -- ^ Wednesday sick hours
+    , Float  -- ^ Wednesday vacation hours
+    , Float  -- ^ Wednesday holiday hours
+    , Float  -- ^ Wednesday comp hours
+    , Float  -- ^ Wednesday total hours
+    , Float  -- ^ Thursday labor hours
+    , Float  -- ^ Thursday sick hours
+    , Float  -- ^ Thursday vacation hours
+    , Float  -- ^ Thursday holiday hours
+    , Float  -- ^ Thursday comp hours
+    , Float  -- ^ Thursday total hours
+    , Float  -- ^ Friday labor hours
+    , Float  -- ^ Friday sick hours
+    , Float  -- ^ Friday vacation hours
+    , Float  -- ^ Friday holiday hours
+    , Float  -- ^ Friday comp hours
+    , Float  -- ^ Friday total hours
+    , Float  -- ^ Saturday labor hours
+    , Float  -- ^ Saturday sick hours
+    , Float  -- ^ Saturday vacation hours
+    , Float  -- ^ Saturday holiday hours
+    , Float  -- ^ Saturday comp hours
+    , Float  -- ^ Saturday total hours
+    , Float  -- ^ Sunday labor hours
+    , Float  -- ^ Sunday sick hours
+    , Float  -- ^ Sunday vacation hours
+    , Float  -- ^ Sunday holiday hours
+    , Float  -- ^ Sunday comp hours
+    , Float  -- ^ Sunday total hours
+    , Float  -- ^ total labor hours
+    , Float  -- ^ total sick hours
+    , Float  -- ^ total vacation hours
+    , Float  -- ^ total holiday hours
+    , Float  -- ^ total comp hours
+    , Float  -- ^ week total hours
+    , Float  -- ^ comp earned this week
+    , Float  -- ^ comp accrued/accumulated after this week
+    )
+
 
 data Options
     = Options
@@ -156,9 +221,9 @@ checkFilesExist files = do
 
 -- | 
 -- Convert a single CSV line to our internal data type representation
-convertCsvLine :: CsvLine -- ^ Our CSV line
+convertInputCsvLine :: InputCsvLine -- ^ Our CSV line
                -> Either String DataStruct    -- ^ Either an error message or the converted data
-convertCsvLine (week, category, mon, tue, wed, thu, fri, sat, sun) = 
+convertInputCsvLine (week, category, mon, tue, wed, thu, fri, sat, sun) = 
         case category of
             -- TODO: can't use the constants here b/c case creates new variables during matching. Find another way that allows us to use the constants.
             "labor" -> Right $ weekDataStruct {laborHours = weekHours}
@@ -201,7 +266,7 @@ processFiles :: [FilePath]  -- ^ Input timesheets to process
 processFiles files = do
                 fileContents <- getCleanFileContents files
                 -- Convert text into CSV and check for any errors
-                let eith = decode NoHeader fileContents :: Either String (Vector CsvLine) in
+                let eith = decode NoHeader fileContents :: Either String (Vector InputCsvLine) in
                     -- Check for any warnings
                     case eith of
                         Left errorStr -> putStrLn errorStr >> return ["processing failed"]
