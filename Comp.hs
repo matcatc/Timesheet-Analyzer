@@ -32,6 +32,7 @@ import Data.Either
 import Data.List
     ( foldl'
     , groupBy
+    , inits
     , intercalate
     , sortBy
     )
@@ -144,6 +145,7 @@ data DataStruct
         , compHours :: WeekNumbers
         , totalHours :: WeekNumbers -- ^ total hours per day
         , compEarned :: Float -- ^ how much comp-time was earned this week. Can be negative.
+        , compAccumulated :: Float -- ^ how much comp-time has been accumulated by this week
         }
     -- TODO: add total hours?
     -- TODO: derive other stuff?
@@ -160,12 +162,13 @@ emptyDataStruct = DataStruct
     , compHours = emptyWeekNumbers
     , totalHours = emptyWeekNumbers
     , compEarned = 0.0
+    , compAccumulated = 0.0
     }
 
 -- | Determine whether a data struct has any non-zero hours in it
 isEmptyDataStruct :: DataStruct
                   -> Bool     -- ^ True if empty. False if at least one day is non-zero.
-isEmptyDataStruct x = laborEmpty && sickEmpty && vacationEmpty && holidayEmpty && compEmpty && totalEmpty && compEarnedEmpty
+isEmptyDataStruct x = laborEmpty && sickEmpty && vacationEmpty && holidayEmpty && compEmpty && totalEmpty && compEarnedEmpty && compAccumulatedEmpty
     where
         laborEmpty = isEmptyWeek $ laborHours x
         sickEmpty = isEmptyWeek $ sickHours x
@@ -174,6 +177,7 @@ isEmptyDataStruct x = laborEmpty && sickEmpty && vacationEmpty && holidayEmpty &
         compEmpty = isEmptyWeek $ compHours x
         totalEmpty = isEmptyWeek $ totalHours x
         compEarnedEmpty = 0 == compEarned x
+        compAccumulatedEmpty = 0 == compAccumulated x 
         
 
 -- | Data structs are for the same week
@@ -197,6 +201,7 @@ addDataStructs l r =
         , compHours = addWeekNumbers (compHours l) (compHours r)
         , totalHours = addWeekNumbers (totalHours l) (totalHours r)
         , compEarned = (compEarned l) + (compEarned r)
+        , compAccumulated = (compAccumulated l) + (compAccumulated r)
         }
 
 -- | Merge multiple data structs for the same week.
@@ -529,7 +534,7 @@ convertOutputCsvLine x =
     , total $ compHours x
     , total $ totalHours x
     , compEarned x
-    , 0  -- TODO: accrued/accumulated after this week
+    , compAccumulated x
     )
 
 -- | Convert a list of DataStructs to a list of CSV lines
@@ -557,8 +562,6 @@ computeWeeklyTotal x = WeekNumbers
 
 -- | Compute the various metrics for the week
 computeWeeklyMetrics :: DataStruct -> DataStruct
--- TODO: implement. Dummied to return without computing anything for now
---computeWeeklyMetrics = id
 computeWeeklyMetrics x = DataStruct
         { weekId = weekId x
         , laborHours = labor
@@ -593,6 +596,31 @@ computeWeeklyMetrics x = DataStruct
         -- comp time earned is time worked over the normal 40 hour week, minus any comp time taken.
         compEarned = (total totalHours) - _NORMAL_WORK_WEEK_HOURS - (total comp)
 
+-- | Compute the accumulated comp time over a course of weeks.
+-- Note: order of the list matters! First item in list (head) is earlier in time)
+computeAccumulatedCompTime :: [DataStruct] -> [DataStruct]
+computeAccumulatedCompTime xs = map updateAccumulatedCompTime $ zip xs accumulatedCompTimes
+    where
+        weeklyEarnedCompTime :: [Float]
+        weeklyEarnedCompTime = map compEarned xs
+
+        accumulatedCompTimes :: [Float]
+        accumulatedCompTimes = map sum $ tail $ inits weeklyEarnedCompTime
+
+        -- Note: could probably uses lenses for this
+        updateAccumulatedCompTime :: (DataStruct, Float) -> DataStruct
+        updateAccumulatedCompTime (x, acc) = DataStruct
+            { weekId = weekId x
+            , laborHours = laborHours x
+            , sickHours = sickHours x
+            , vacationHours = vacationHours x
+            , holidayHours = holidayHours x
+            , compHours = compHours x
+            , totalHours = totalHours x
+            , compEarned = compEarned x
+            , compAccumulated = acc
+            }
+
 -- |
 -- Process the input files
 -- TODO: use Either to return success status?
@@ -613,9 +641,11 @@ processInput fileContents =
                                 -- TODO: return error (Either?)
                                 Left errorStr -> error "processing failed " -- : errorStr
                                 Right xs -> let weeklyDataStructs = map mergeDataStructs (groupByWeek xs)
-                                                weeklyMetrics = map computeWeeklyMetrics weeklyDataStructs
-                                                sortedMetrics = sortDataStructs weeklyMetrics
-                                                outCsvLines = convertOutputCsvLines sortedMetrics in
+                                                -- need to sort first since computing the accumulated comp time depends on it
+                                                sortedMetrics = sortDataStructs weeklyDataStructs
+                                                weeklyMetrics = map computeWeeklyMetrics sortedMetrics
+                                                weeklyMetrics' = computeAccumulatedCompTime weeklyMetrics
+                                                outCsvLines = convertOutputCsvLines weeklyMetrics' in
                                                     -- TODO: add CSV header on the first line
                                                     encode outCsvLines
 
