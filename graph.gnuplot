@@ -68,7 +68,7 @@ set key reverse Left outside
 
 
 # Run stats command in order to get the number of rows (records)
-stats input_filename
+stats input_filename nooutput
 
 # Number of xtics we want in the graph. Design constant.
 number_xtics = 6
