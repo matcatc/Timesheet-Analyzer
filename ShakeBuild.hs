@@ -78,6 +78,7 @@ main = shakeArgs shakeOptions{shakeFiles="_build", shakeChange=ChangeModtime} $ 
         cmd "asciidoctor-diagram --out-file" [out] [ascii]
 
     -- Build the test gnuplot graphs
-    "_build/gnuplot_test/*.png" %>
+    "_build/gnuplot_test/*.png" %> \out -> do
+        need ["graph.gnuplot"]  -- so that when we update the gnuplot file it rebuilds
         cmd "gnuplot -c graph.gnuplot ./test_intermediate_timesheet.csv ./_build/gnuplot_test/"
 
