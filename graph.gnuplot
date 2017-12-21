@@ -67,6 +67,26 @@ set datafile separator ","
 set key reverse Left outside
 
 
+# Run stats command in order to get the number of rows (records)
+stats input_filename
+
+# Number of xtics we want in the graph. Design constant.
+number_xtics = 6
+
+# How many labels to skip in order to get number_xtics in the graph (approx)
+xtic_skip = int(STATS_records / number_xtics)
+
+# Function to print out the xtics labels only every N labels
+# Note: hardcodes the labels as being in column 1 (which they are)
+# Note: "hardcodes" how often to print out xtics using data from stats computed above
+# See: http://compgroups.net/comp.graphics.apps.gnuplot/way-to-limit-xtics-in-histogram/351857 for the inspiration
+everyNth(dum) = (int(column(0)) % xtic_skip == 0) ? stringcolumn(1) : ""
+
+# Note: to make the above function work in the plots, we need to make sure the
+# using part of the plot command is correct. In particular, don't do "1:col",
+# as this will pull in the label column (1) into the graph. Instead do "col:xtics(everyNth())"
+
+
 #################################################
 # Plot 1: linechart of total week time, with breakdown (seperate lines for each category)
 set output output_dir."/total_week_time_linechart.png"
@@ -77,14 +97,14 @@ set xlabel "Week"
 # Use smoothing so the graph is a little easier on the eyes and to see. use
 # mcsplines so that the lines go through all data points and don't "overshoot"
 # (as csplines would).
-plot input_filename using 1:49 title "total" smooth mcsplines with lines ls 1,\
-    "" using 1:44 title "labor" smooth mcsplines with lines ls 2,\
-    "" using 1:45 title "sick" smooth mcsplines with lines ls 3,\
-    "" using 1:46 title "vacation" smooth mcsplines with lines ls 4,\
-    "" using 1:47 title "holiday" smooth mcsplines with lines ls 5,\
-    "" using 1:48 title "comp" smooth mcsplines with lines ls 6,\
+plot input_filename using 49:xtic(everyNth(0)) title "total" smooth mcsplines with lines ls 1,\
+    "" using 44 title "labor" smooth mcsplines with lines ls 2,\
+    "" using 45 title "sick" smooth mcsplines with lines ls 3,\
+    "" using 46 title "vacation" smooth mcsplines with lines ls 4,\
+    "" using 47 title "holiday" smooth mcsplines with lines ls 5,\
+    "" using 48 title "comp" smooth mcsplines with lines ls 6,\
     40 title "40" with lines ls 7,\
-    "" using 1:49 title "" with points ls 1
+    "" using 49 title "" with points ls 1
 
 
 #################################################
@@ -98,12 +118,12 @@ set xlabel "Week"
 # fill from x axis since we won't have any starting/ending weeks with "0" hours
 firstcol=44
 cumulated(i)=((i>firstcol)?column(i)+cumulated(i-1):(i==firstcol)?column(i):1/0)
-plot input_filename using 1:(cumulated(48)) title "comp" with filledcurves x ls 6,\
-    "" using 1:(cumulated(47)) title "holiday" with filledcurves x ls 5,\
-    "" using 1:(cumulated(46)) title "vacation" with filledcurves x ls 4,\
-    "" using 1:(cumulated(45)) title "sick" with filledcurves x ls 3,\
-    "" using 1:(cumulated(44)) title "labor" with filledcurves x ls 2,\
-    "" using 1:49 title "total" with linespoints ls 1,\
+plot input_filename using (cumulated(48)):xtic(everyNth(0)) title "comp" with filledcurves x ls 6,\
+    "" using (cumulated(47)) title "holiday" with filledcurves x ls 5,\
+    "" using (cumulated(46)) title "vacation" with filledcurves x ls 4,\
+    "" using (cumulated(45)) title "sick" with filledcurves x ls 3,\
+    "" using (cumulated(44)) title "labor" with filledcurves x ls 2,\
+    "" using 49 title "total" with linespoints ls 1,\
     40 title "40" with lines ls 7
 
 
@@ -114,8 +134,8 @@ set output output_dir."/average_week_labor_linechart.png"
 set title "Averaged/Smoothed Week Labor Time"
 set xlabel "Week"
 
-plot input_filename using 1:44 title "smoothed labor" smooth bezier with lines ls 2,\
-    "" using 1:44 title "labor" with points ls 2,\
+plot input_filename using 44:xtic(everyNth(0)) title "smoothed labor" smooth bezier with lines ls 2,\
+    "" using 44 title "labor" with points ls 2,\
     40 title "40" with lines ls 7
 
 
@@ -126,8 +146,8 @@ set output output_dir."/average_week_total_linechart.png"
 set title "Averaged/Smoothed Week Total Time"
 set xlabel "Week"
 
-plot input_filename using 1:49 title "smoothed total" smooth bezier with lines ls 1 lw 2,\
-    "" using 1:49 title "total" with points ls 1,\
+plot input_filename using 49:xtic(everyNth(0)) title "smoothed total" smooth bezier with lines ls 1 lw 2,\
+    "" using 49 title "total" with points ls 1,\
     40 title "40" with lines ls 7
 #    "" using 1:49 title "total" smooth mcsplines with lines ls 1 lw 1,\
 
@@ -145,7 +165,7 @@ set title "Weekly earned comp time"
 set xlabel "Week"
 
 # add a line for x axis to help with visibility
-plot input_filename using 1:50 title "earned comp time" with lines ls 6 lw 2,\
+plot input_filename using 50:xtic(everyNth(0)) title "earned comp time" with lines ls 6 lw 2,\
      0 title "" with lines ls 7
 
 # Resetting yrange back to what it was before
@@ -166,7 +186,7 @@ set title "Weekly accrued comp time"
 set xlabel "Week"
 
 # add a line for x axis to help with visibility
-plot input_filename using 1:51 title "accrued comp time" with lines ls 6 lw 2,\
+plot input_filename using 51:xtic(everyNth(0)) title "accrued comp time" with lines ls 6 lw 2,\
      0 title "" with lines ls 7
 
 # Resetting yrange back to what it was before
