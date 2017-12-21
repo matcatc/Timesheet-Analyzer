@@ -51,7 +51,7 @@ set xtics rotate
 # Y axis is always hours
 set ylabel "hours"
 # 0 to largest number
-set yrange [0:]
+set yrange [0:*]
 # Setup a grid
 set grid
 # Have ytics be in 8 hour increments (since a normal working day is 8 hours)
@@ -134,22 +134,44 @@ plot input_filename using 1:49 title "smoothed total" smooth bezier with lines l
 
 #################################################
 # Plot 5: Weekly earned comp time
+# Note: the comp time earned each week can be negative in cases where comp time
+# is spent/used. Need to allow for negative y values in this graph.
+
+# set yrange so it will display negative values
+set yrange [*:*]
 
 set output output_dir."/week_earned_comp_time_linechart.png"
 set title "Weekly earned comp time"
 set xlabel "Week"
 
-plot input_filename using 1:50 title "earned comp time" with lines ls 6 lw 2
+# add a line for x axis to help with visibility
+plot input_filename using 1:50 title "earned comp time" with lines ls 6 lw 2,\
+     0 title "" with lines ls 7
+
+# Resetting yrange back to what it was before
+# 0 to largest number
+set yrange [0:*]
 
 #################################################
 # Plot 6: Weekly accrued comp time
+# Note: since the comp time earned each week could be negative, the accrued
+# value could also theoretically go negative (i.e.: borring comp time from the
+# future.) So we need to allow for negative y values in this graph
+
+# set yrange so it will display negative values
+set yrange [*:*]
 
 set output output_dir."/week_accrued_comp_time_linechart.png"
 set title "Weekly accrued comp time"
 set xlabel "Week"
 
-plot input_filename using 1:51 title "accrued comp time" with lines ls 6 lw 2
+# add a line for x axis to help with visibility
+plot input_filename using 1:51 title "accrued comp time" with lines ls 6 lw 2,\
+     0 title "" with lines ls 7
 
+# Resetting yrange back to what it was before
+# 0 to largest number
+set yrange [0:*]
 
 
 #################################################
