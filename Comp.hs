@@ -78,6 +78,11 @@ _CATEGORY_COMP = "comp"
 _COMMENT_CHARACTER :: Char
 _COMMENT_CHARACTER = '#'
 
+-- | Number of hours in a normal work week
+-- TODO: make configurable?
+_NORMAL_WORK_WEEK_HOURS :: Float
+_NORMAL_WORK_WEEK_HOURS = 40
+
 -- |
 -- Numbers for a particular week
 data WeekNumbers
@@ -138,6 +143,7 @@ data DataStruct
         , holidayHours :: WeekNumbers
         , compHours :: WeekNumbers
         , totalHours :: WeekNumbers -- ^ total hours per day
+        , compEarned :: Float -- ^ how much comp-time was earned this week. Can be negative.
         }
     -- TODO: add total hours?
     -- TODO: derive other stuff?
@@ -153,12 +159,13 @@ emptyDataStruct = DataStruct
     , holidayHours = emptyWeekNumbers
     , compHours = emptyWeekNumbers
     , totalHours = emptyWeekNumbers
+    , compEarned = 0.0
     }
 
 -- | Determine whether a data struct has any non-zero hours in it
 isEmptyDataStruct :: DataStruct
                   -> Bool     -- ^ True if empty. False if at least one day is non-zero.
-isEmptyDataStruct x = laborEmpty && sickEmpty && vacationEmpty && holidayEmpty && compEmpty && totalEmpty
+isEmptyDataStruct x = laborEmpty && sickEmpty && vacationEmpty && holidayEmpty && compEmpty && totalEmpty && compEarnedEmpty
     where
         laborEmpty = isEmptyWeek $ laborHours x
         sickEmpty = isEmptyWeek $ sickHours x
@@ -166,6 +173,7 @@ isEmptyDataStruct x = laborEmpty && sickEmpty && vacationEmpty && holidayEmpty &
         holidayEmpty = isEmptyWeek $ holidayHours x
         compEmpty = isEmptyWeek $ compHours x
         totalEmpty = isEmptyWeek $ totalHours x
+        compEarnedEmpty = 0 == compEarned x
         
 
 -- | Data structs are for the same week
@@ -188,6 +196,7 @@ addDataStructs l r =
         , holidayHours = addWeekNumbers (holidayHours l) (holidayHours r)
         , compHours = addWeekNumbers (compHours l) (compHours r)
         , totalHours = addWeekNumbers (totalHours l) (totalHours r)
+        , compEarned = (compEarned l) + (compEarned r)
         }
 
 -- | Merge multiple data structs for the same week.
@@ -519,7 +528,7 @@ convertOutputCsvLine x =
     , total $ holidayHours x
     , total $ compHours x
     , total $ totalHours x
-    , 0  -- TODO: earned this week
+    , compEarned x
     , 0  -- TODO: accrued/accumulated after this week
     )
 
@@ -557,7 +566,8 @@ computeWeeklyMetrics x = DataStruct
         , vacationHours = vacation
         , holidayHours = holiday
         , compHours = comp
-        , totalHours = total
+        , totalHours = totalHours
+        , compEarned = compEarned
         }
     where 
         labor = computeWeeklyTotal $ laborHours x
@@ -578,7 +588,10 @@ computeWeeklyMetrics x = DataStruct
             -- Sum total below
             , total = 0
             }
-        total = computeWeeklyTotal preTotal 
+        totalHours = computeWeeklyTotal preTotal 
+
+        -- comp time earned is time worked over the normal 40 hour week, minus any comp time taken.
+        compEarned = (total totalHours) - _NORMAL_WORK_WEEK_HOURS - (total comp)
 
 -- |
 -- Process the input files
