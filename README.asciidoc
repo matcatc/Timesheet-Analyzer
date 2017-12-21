@@ -250,14 +250,14 @@ digraph G
     filter_empty [label="Filter empty|[DataStruct]|num_weeks * num_categories"]
     group_by_week [label="Group by week|[[DataStruct]]|num_weeks [num_categories]"]
     merge_per_week [label="Merge per week|[DataStruct]|num_weeks"]
-    compute_weekly_metrics [label="Compute weekly metrics|[DataStruct]|num_weeks"]
     sort_weeks [label="Sort Weeks|[DataStruct]|num_weeks"]
+    compute_weekly_metrics [label="Compute weekly metrics|[DataStruct]|num_weeks"]
     prep_for_writing [label="Prep for writing|[String]|num_weeks"]
     intermediate_timesheet [label="Intermediate timesheet|Filename|1"]
 
     
     // Defining the edges / relationships between nodes
-    input_timesheets -> list_of_lines -> converted_data_struct_per_week -> filter_empty -> group_by_week -> merge_per_week -> compute_weekly_metrics -> sort_weeks -> prep_for_writing -> intermediate_timesheet
+    input_timesheets -> list_of_lines -> converted_data_struct_per_week -> filter_empty -> group_by_week -> merge_per_week -> sort_weeks -> compute_weekly_metrics -> prep_for_writing -> intermediate_timesheet
 }
 ----
 
