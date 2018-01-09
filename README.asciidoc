@@ -67,87 +67,107 @@ Put the time you actually worked, that way the analysis will be more useful for 
 This is a list of informally specified requirements.
 
 .Requirements
-[options="header", cols="1,7,7"]
+[options="header", cols="1,7,7,1"]
 |===
 | ID
 | Description
 | Rationale / Comment
+| Status
 
 | 001
 | Input files must be in a CSV file format.
 | Makes interoperating with other programs (e.g.: spreadsheets easier). Makes it easy to edit the input files as well.
+| Yes
 
 | 002
 | Input files must support different charge categories.
 | Makes analyzing where the time is spent easier, rather than just having a total "work time" number.
+| Yes
 
 | 003
 | Input files must allow for comments.
 | Users may want to document their timesheets with notes for themselves.
+| Yes
 
 | 004
 | If an input file is missing a category, then it's equivalent to the category having all 0s for that week.
 | Ease of future extensibility; ease of use.
+| Yes
 
 | 005
 | Weeks are specified in the input file using the ISO 8601 standard. Ex: `201736`.
 | Standard.
+| Yes
 
 | 006
 | Generate graphs for the various "metrics" in a PNG format.
 | Graphs make quickly seeing trends / behavior of the metric easier.
+| Yes
 
 | 007
-| Generate a simple HTML report with the graph images included.
-| Makes seeing all the graphs at once easier.
+| Generate a simple HTML and/or PDF report with the graph images included.
+| Makes seeing all the graphs at once easier. Can include a few key summary numbers.
+| No
 
 | 008
 | Compute the following metrics: total time worked per day, total time worked per week.
 | User inputs just the parts, and we compute the totals for them (ease of use).
+| Yes
 
 | 009
 | Input time is in hours. Fractional hours allowed (e.g: 3.75).
 | Allow users to be more precise than just hours, if desired.
+| Yes
 
 | 010
 | Generate a line chart of total week time with lines for the charge categories (breakdown of the total). Also a "stacked" version.
 | See all charge categories in one graph. Stacked version shows how the charge categories add up to the total.
+| Yes
 
 | 011
 | Allow user some way of specifying a time range to analyze.
 | So we don't analyze all of the weeks available, but just a subset.
+| No
 
 | 012
 | TODO: configuration of charge categories.
 | Flexibility and configurability to suit user's needs.
+| No
 
 | 013
 | Temporary / intermediate CSV file is an interface (meaning format of the file should be versioned, etc.)
 | If we want to allow users to use it as part of their own analysis / tooling, format should be consistent / reliable.
+| Finalize
 
 | 014
 | Allow user to provide multiple timesheet CSV files as input.
 | User can then organize their timesheets how they like (e.g.: one big file, one file per year, one file per quarter, one file per month, one file per week).
+| Test
 
 | 015
 | Generate a separate line chart for an "averaged" or "smoothed" for each charge category and for the total.
 | Allows for seeing a general trend in the charge categories.
+| Yes
 
 | 016
 | Generate a "box plot" or "candlestick plot" for total time for each day (one plot with candlesticks for each day).
 | See the statistical information (mean, median, min, max, std deviation) for days. Helps see if there's any variations between days.
+| No
 
 | 017
 | Generate a histogram per charge category and total week work. Ideally also include labels in the graph for mean, median, std deviation, etc.
 | See what the variation / statistics are for total time spent per week. Likewise for each charge category.
+| No
 
 | 018
 | Compute the earned comp time per week as `time_worked - 40` (i.e.: this may automatically go negative without comp time being explicitly entered in the timesheet for the week.) Accumulate/sum the earned comp time over the weeks to compute the "accrued comp time." Accrued comp time shall be computed as `accrued_previous_week + earned_this_week`.
 | Useful for tracking how much comp time is being earned and accrued. This is necessary since companies will not track this information. Allow for earned comp time to be negative so that we can use the accrued comp time to track where we are in hours worked vs the 40 hour threshold.
+| Yes
 
 | 019
 | Generate a line chart for accumulated / accrued comp time over the course of the weeks. Include the final/current accrued comp time value in text (label or in the report).
 | See trends in comp time accrual. See how much comp time is available currently.
+| Yes
 
 |===
 
@@ -174,19 +194,20 @@ Here is a schematic view of what Timesheet Analyzer does:
 | CSV       |    | and          |    | Timesheet    |    +---------+    | PNG    |
 |{d} cGRE   |    | Analysis cBLU|    | CSV {d} cPNK |                   | {d}cPNK|
 +-----------+    +--------------+    +--------------+                   +--------+
-                                                                            |
-+----------+                +---------------+                               |
-| Report   |--------------->| Asciidoc(tor) |<------------------------------+
-| Template |                +---------------+ 
-| {d} cBLU |                        |
-+----------+                        |
-                                    |
-                                    v
-                                +--------+
-                                | Report |
-                                | HTML   |
-                                | {d}cPNK|
-                                +--------+
+                        |                                                   |
+                        v                                                   |
++----------+     +---------------+           +---------------+              |
+| Report   |---->| Parameterized |---------->| Asciidoc(tor) |<-------------+
+| Template |     | Report {d}cPNK|           +---------------+ 
+| {d} cBLU |     | Template      |                   |
++----------+     +---------------+                   |
+                                                     |
+                                                     v
+                                               +------------+
+                                               | Report     |
+                                               | HTML / PDF |
+                                               | {d}cPNK    |
+                                               +------------+
 
 Legend
 +--------------------------------+
@@ -219,13 +240,14 @@ So Timesheet Analyzer is essentially a build system, where there are three input
 * Gnuplot file (graph template)
 * Asciidoc file (report template)
 
-And three outputs:
+And four outputs:
 
 * Temporary timesheet file - which user can pipe to their own programs
 * Graph images - which can be viewed individually or printed
-* HTML report - the main output
+* Parameterized teport template - report template with computed metrics filled in
+* HTML/PDF report - the main output
 
-In practice users will only modify their timesheet file, and will mainly only be interested in the final HTML report or occasionally the graph image files.
+In practice users will only modify their timesheet file, and will mainly only be interested in the final HTML/PDF report or occasionally the graph image files.
 
 
 === Computation and Analysis Component Overview
