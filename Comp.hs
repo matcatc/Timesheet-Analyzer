@@ -11,6 +11,7 @@
 -- TODO: switch to a streaming based setup (instead of just lazy datatypes)?
 --          Should only be necessary when processing really large inputs, so handle later.
 -- TODO: switch out for a different CSV library later?
+-- TODO: create a explicit type (alias?) to String for week IDs.
 
 -- For cmdArgs
 {-# LANGUAGE DeriveDataTypeable #-}
@@ -50,6 +51,10 @@ import System.Directory
 
 -- TODO: separate out command line arguments stuff to a separate module?
 import System.Console.CmdArgs
+
+-- | Version string for the program
+_PROGRAM_VERSION_STRING :: String
+_PROGRAM_VERSION_STRING = "v0.0"
 
 -- | Default output timesheet
 _DEFAULT_OUTPUT_TIMESHEET :: String
@@ -226,6 +231,20 @@ sortDataStructs = sortBy comp
         comp :: DataStruct -> DataStruct -> Ordering
         comp l r = compare (weekId l) (weekId r)
 
+-- | Filter to only allow data structs for a given time window
+filterDataStructsInTimeWindow :: Maybe String -- ^ Allow weeks after this week (inclusive). Nothing = no filter.
+                              -> Maybe String -- ^ Allow weeks before this week (inclusive). Nothing = no filter.
+                              -> [DataStruct]
+                              -> [DataStruct]
+filterDataStructsInTimeWindow afterWeek beforeWeek = filter (helper afterWeek beforeWeek)
+    where
+        -- | Determine whether to keep this week based on afterWeek and beforeWeek
+        helper :: Maybe String -> Maybe String -> DataStruct -> Bool
+        helper Nothing Nothing _ = True
+        helper (Just a) Nothing x = weekId x >= a
+        helper Nothing (Just b) x = weekId x <= b
+        helper (Just a) (Just b) x = (weekId x >= a) && (weekId x <= b)
+
 -- TODO: Instead of going through tuples, encode/decode directly from/to DataStruct.
 -- See http://hackage.haskell.org/package/cassava-0.5.1.0/docs/Data-Csv.html
 
@@ -390,14 +409,21 @@ data Options
     = Options
         { inputTimesheets :: [FilePath]
         , outputTimesheet :: FilePath
+        , afterWeek :: Maybe String
+        , beforeWeek :: Maybe String
         }
     deriving (Data,Show,Typeable)
 
 options :: Options
 options = Options
     { inputTimesheets = def &= args &= typ "FILES"
-    , outputTimesheet = _DEFAULT_OUTPUT_TIMESHEET &= typ "FILE"
+    , outputTimesheet = _DEFAULT_OUTPUT_TIMESHEET &= explicit &= name "output" &= name "o" &= typ "FILE" &= help "Output timesheet filename/path"
+    , afterWeek = Nothing &= explicit &= name "after" &= name "A" &= typ "YYYYWW" &= help "Only include weeks after this date (inclusive)"
+    , beforeWeek = Nothing &= explicit &= name "before" &= name "B" &= typ "YYYYWW" &= help "Only include weeks before this date (inclusive)"
     }
+    &= program "TimesheetAnalyzerComp"
+    &= summary ("Timesheet Analyzer " ++ _PROGRAM_VERSION_STRING)
+    &= helpArg [name "h"]
 
 -- |
 -- Check that the files exist
@@ -627,8 +653,10 @@ computeAccumulatedCompTime xs = map updateAccumulatedCompTime $ zip xs accumulat
 -- TODO: rename function
 -- TODO: clean up function (refactor, split, etc.) Goal is to make it easier to use in ghci
 processInput :: BS.ByteString -- ^ Input timesheet data
+             -> Maybe String -- ^ Only include weeks after this week (inclusive)
+             -> Maybe String -- ^ Only include weeks before this week (inclusive)
              -> BS.ByteString -- ^ Output timesheet data to be written
-processInput fileContents =
+processInput fileContents afterWeek beforeWeek =
                 -- Convert text into CSV and check for any errors
                 let eith = decode NoHeader fileContents :: Either String (Vector InputCsvLine) in
                     -- Check for any warnings / errors from decoding
@@ -643,7 +671,10 @@ processInput fileContents =
                                 Right xs -> let weeklyDataStructs = map mergeDataStructs (groupByWeek xs)
                                                 -- need to sort first since computing the accumulated comp time depends on it
                                                 sortedMetrics = sortDataStructs weeklyDataStructs
-                                                weeklyMetrics = map computeWeeklyMetrics sortedMetrics
+                                                -- filter out weeks before computing metrics in order to avoid messing up the
+                                                -- accumulated metrics (and to save computation time.)
+                                                filteredMetrics = filterDataStructsInTimeWindow afterWeek beforeWeek sortedMetrics
+                                                weeklyMetrics = map computeWeeklyMetrics filteredMetrics
                                                 weeklyMetrics' = computeAccumulatedCompTime weeklyMetrics
                                                 outCsvLines = convertOutputCsvLines weeklyMetrics' in
                                                     -- TODO: add CSV header on the first line
@@ -656,12 +687,14 @@ main :: IO ()
 main = do
     opts <- cmdArgs options
     let inFiles = inputTimesheets opts
-        outFile = outputTimesheet opts in do
+        outFile = outputTimesheet opts 
+        afterWeek' = afterWeek opts
+        beforeWeek' = beforeWeek opts in do
             userInputOk <- checkUserInput inFiles outFile
             when userInputOk $ do
                 putStrLn $ "Will process the following timesheets: " ++ intercalate ", " inFiles
                 fileContents <- getCleanFileContents inFiles
-                let outputMetrics = processInput fileContents in do
+                let outputMetrics = processInput fileContents afterWeek' beforeWeek' in do
                     -- Build outputMetrics before we print that we're writing to the file (TODO: might need to make other changes)
                     putStrLn $ seq outputMetrics ("Writing to output timesheet: " ++ outFile)
                     BS.writeFile outFile outputMetrics

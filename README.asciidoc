@@ -127,7 +127,7 @@ This is a list of informally specified requirements.
 | 011
 | Allow user some way of specifying a time range to analyze.
 | So we don't analyze all of the weeks available, but just a subset.
-| No
+| Yes
 
 | 012
 | TODO: configuration of charge categories.
@@ -142,7 +142,7 @@ This is a list of informally specified requirements.
 | 014
 | Allow user to provide multiple timesheet CSV files as input.
 | User can then organize their timesheets how they like (e.g.: one big file, one file per year, one file per quarter, one file per month, one file per week).
-| Test
+| Yes
 
 | 015
 | Generate a separate line chart for an "averaged" or "smoothed" for each charge category and for the total.
