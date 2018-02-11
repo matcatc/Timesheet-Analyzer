@@ -23,6 +23,7 @@ PATH="${PATH}:${_base}"
 PATH="${PATH}:./_build/"
 
 # Run timesheet analyzer to generate intermediate_timesheet.csv
+echo "Analyzing Timesheets..."
 TimesheetAnalyzerComp $*
 
 # TODO: how to avoid continuing below if above command didn't actually process any files?
@@ -30,8 +31,21 @@ TimesheetAnalyzerComp $*
 # was passed (because then cmdArgs will return 0).
 
 # Generate the graphs in the local directory
+echo "Generating graphs..."
 # TODO: provide a way to allow user to select the directory?
 #gnuplot -c graph.gnuplot ./intermediate_timesheet.csv ./
 # TODO: Delete When Done Debugging
 gnuplot -c graph.gnuplot ./intermediate_timesheet.csv ./test/
+
+
+# Generate a HTML report
+echo "Generating HTML report..."
+asciidoctor report.asciidoc
+
+# Generate a PDF report
+echo "Generating PDF report..."
+asciidoctor-pdf report.asciidoc
+
+
+echo "Done."
 
