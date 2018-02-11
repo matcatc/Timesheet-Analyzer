@@ -25,6 +25,10 @@ PATH="${PATH}:./_build/"
 # Run timesheet analyzer to generate intermediate_timesheet.csv
 TimesheetAnalyzerComp $*
 
+# TODO: how to avoid continuing below if above command didn't actually process any files?
+# Exit codes works partly, but doesn't help for situation like "--help" option
+# was passed (because then cmdArgs will return 0).
+
 # Generate the graphs in the local directory
 # TODO: provide a way to allow user to select the directory?
 #gnuplot -c graph.gnuplot ./intermediate_timesheet.csv ./
