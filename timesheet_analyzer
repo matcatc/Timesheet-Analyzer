@@ -1,8 +1,33 @@
-#!/bin/sh
+#!/bin/bash
 # 
 # This is the main Timesheet Analyzer program, which coordinates the other
 # components.
 #
 # Author: Matthew Todd
 # Date: 2017-09-16
+#
+# TODO: switch to /bin/sh in future?
+# TODO: paths?
+# TODO: rewrite in Haskell (and call TimesheetAnalyzerComp directly in Haskell)?
+
+# add directory in which this .sh file exists to $PATH so that we can call the
+# other parts if they're in the same directory and this script is called via
+# a relative path.
+# TODO: decide whether to keep this depending on how we package/install Timesheet Analyzer
+_script="$(readlink -f ${BASH_SOURCE[0]})"
+_base="$(dirname $_script)"
+PATH="${PATH}:${_base}"
+
+
+# TODO: Delete When Done Debugging
+PATH="${PATH}:./_build/"
+
+# Run timesheet analyzer to generate intermediate_timesheet.csv
+TimesheetAnalyzerComp $*
+
+# Generate the graphs in the local directory
+# TODO: provide a way to allow user to select the directory?
+#gnuplot -c graph.gnuplot ./intermediate_timesheet.csv ./
+# TODO: Delete When Done Debugging
+gnuplot -c graph.gnuplot ./intermediate_timesheet.csv ./test/
 
