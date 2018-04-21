@@ -8,25 +8,10 @@ Timesheet Analyzer - Report
 // TODO: images dir based on the final tool
 :imagesdir: ./test/
 
-// TODO: Delete when done debugging
-:StartWeek: 201738
-:EndWeek: 201806
-:NumberWeeks: 45
-:TotalHours: 582
-:TotalAvgPerWeek: 42
-:LaborHours: 500
-:LaborAvgPerWeek: 38
-:SickHours: 24
-:SickAvgPerWeek: 2
-:VacationHours: 16
-:VacationAvgPerWeek: 1
-:HolidayHours: 32
-:HolidayAvgPerWeek: 3
-:CompHours: 43
-:CompAvgPerWeek: 3
-:CompTimeAccrued: 432
-// TODO: use an include to get the real values
-//include::metrics.asciidoc
+// Use an include to get various metrics from the computation component. This
+// includes several document attributes, and thus *must* appear before any
+// text.
+include::reportInfo.asciidoc[]
 
 
 == Summary
