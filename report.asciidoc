@@ -33,6 +33,10 @@ Over the course of these {NumberWeeks} weeks, a total of {TotalHours} hours were
 
 Over the course of this period, {CompTimeAccrued} hours of comp time have been accrued.
 
+// Not using a footnote in the table cell as this doesn't work properly in the PDF generation. It does work properly in the HTML generation.
+"Comp (explicit)" refers to comp time being explicitly taken, and doesn't include time that is "implicitly" taken by going home early (e.g.: working 39 hours in a 40 hour work week.)
+
+
 == Total Time
 
 The following graph shows an averaged/smoothed plot of the total weekly time.
@@ -123,7 +127,7 @@ This can be useful when one knows they'll have to work a lot of extra hours in t
 .Accrued Comp Time Linechart
 image::week_accrued_comp_time_linechart.png[Accrued Comp Time Linechart]
 
-To see how much comp time has been accrued, please see the <<Summary>>.
+Over the course of the analyzed period, {CompTimeAccrued} hours of comp time have been accrued.
 
 The second graph shows how much comp time is earned each week.
 Positive values mean one has worked more than 40 hours that week, and thus earned some comp time.
