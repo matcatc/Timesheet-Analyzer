@@ -137,6 +137,29 @@ addWeekNumbers l r = WeekNumbers
     , total = (total l) + (total r)
     }
 
+-- | Compute the number of weeks that passed between 2 IDs.
+-- I.e.: subtraction but take into account the year boundaries.
+-- Precondition: weekIds are of format yyyyww
+diffWeekId :: String -- ^ Start week ID
+           -> String -- ^ End week ID
+           -> Int -- ^ Number of weeks (end - start)
+diffWeekId start end =
+        -- If weeks are from the same year, then just diff the week portions of the year
+        if startYear == endYear then
+            endWeek - startWeek
+        -- If weeks are from different years, then 52 weeks for every full year, plus weeks for starting year, plus weeks for ending year
+        else
+            (52 * (endYear - startYear - 1)) + (52 - startWeek + 1) + (endWeek - 0)
+    where
+        -- Break week IDs into year and week components so we can handle year boundaries
+        year = take 4
+        week = drop 4
+        toInt x = read x :: Int
+        startYear = toInt $ year start
+        startWeek = toInt $ week start
+        endYear = toInt $ year end
+        endWeek = toInt $ week end
+
 -- |
 -- Our internal data type representation of the timesheet data for a week
 -- TODO: rename?
@@ -717,9 +740,7 @@ generateReportInfo weeklyMetrics = ReportInfo
     where
         start = weekId $ head weeklyMetrics
         end = weekId $ last weeklyMetrics
-
-        -- TODO: this breaks at the year boundary since there's only 52 weeks in a year
-        numWeeks = (read end :: Int) - (read start :: Int)
+        numWeeks = diffWeekId start end
         
         avg :: Float -> Float
         avg x = x / fromIntegral numWeeks
