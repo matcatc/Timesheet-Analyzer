@@ -38,6 +38,8 @@ PATH="${PATH}:${_base}"
 
 # TODO: Delete When Done Debugging
 PATH="${PATH}:./_build/"
+# TODO: Delete (or update) when done debugging
+OUTPUT_DIR="./"
 
 # Run timesheet analyzer to generate intermediate_timesheet.csv
 echo "Analyzing Timesheets..."
@@ -52,16 +54,16 @@ echo "Generating graphs..."
 # TODO: provide a way to allow user to select the directory?
 #gnuplot -c graph.gnuplot ./intermediate_timesheet.csv ./
 # TODO: Delete When Done Debugging
-gnuplot -c graph.gnuplot ./intermediate_timesheet.csv ./test/
+gnuplot -c graph.gnuplot ./intermediate_timesheet.csv ${OUTPUT_DIR}
 
 
 # Generate a HTML report
 echo "Generating HTML report..."
-asciidoctor report.asciidoc
+asciidoctor report.asciidoc -D ${OUTPUT_DIR}
 
 # Generate a PDF report
 echo "Generating PDF report..."
-asciidoctor-pdf report.asciidoc
+asciidoctor-pdf report.asciidoc -D ${OUTPUT_DIR}
 
 
 echo "Done."

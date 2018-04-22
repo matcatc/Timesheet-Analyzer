@@ -123,7 +123,7 @@ This is a list of informally specified requirements.
 | 007
 | Generate a simple HTML and/or PDF report with the graph images included.
 | Makes seeing all the graphs at once easier. Can include a few key summary numbers.
-| No
+| Yes
 
 | 008
 | Compute the following metrics: total time worked per day, total time worked per week.
@@ -260,7 +260,7 @@ And four outputs:
 
 * Temporary timesheet file - which user can pipe to their own programs
 * Graph images - which can be viewed individually or printed
-* Parameterized teport template - report template with computed metrics filled in
+* Parameterized report template - report template with computed metrics filled in
 * HTML/PDF report - the main output
 
 In practice users will only modify their timesheet file, and will mainly only be interested in the final HTML/PDF report or occasionally the graph image files.
@@ -269,7 +269,7 @@ In practice users will only modify their timesheet file, and will mainly only be
 === Computation and Analysis Component Overview
 
 The Computation and Analysis Component ("comp" for short) is responsible for taking in the user provided timesheet file(s) and generating a single intermediate timesheet file for use in generating the graphs.
-In short, it's a data processesing pipeline, which looks like this:
+In short, it's a data processing pipeline, which looks like this:
 
 .Comp Component Dataflow
 [graphviz]
@@ -304,7 +304,7 @@ I.e.: it includes all 7 days, all categories, and all computed metrics (e.g.: to
 The key thing to note here is that this data type supports a `fold` or `union` operation which allows for merging two of them together.
 We leverage this in order to simplify things.
 
-When we read in the timesheet data from the multiple user provided timesheet files, the information for a particular week is spread out over multiple lines, which may or may not be contigious.
+When we read in the timesheet data from the multiple user provided timesheet files, the information for a particular week is spread out over multiple lines, which may or may not be contiguous.
 So we convert each and every line into a data structure.
 Since one line only contains the data for one category (e.g.: labor but not sick, vacation, etc.), the data structure will be incomplete.
 But we'll have N of these data structs for N categories, which can then be merged to create a single data struct for the week.
@@ -350,7 +350,7 @@ But I have concerns as to usability in this scenario, and want to focus on deliv
 
 * Timesheet Analyzer is installed
 * http://gnuplot.info[Gnuplot] is installed
-* http://asciidoctor.org[Asciidoctor] or http://www.methods.co.nz/asciidoc/[Asciidoc] is installed
+* http://asciidoctor.org[Asciidoctor] (recommended) or http://www.methods.co.nz/asciidoc/[Asciidoc] is installed
 
 When installing via the Debian package, dependencies should be automatically handled.
 TODO: verify / update this statement once we've created the Debian package.
@@ -364,18 +364,18 @@ TODO: verify / update this statement once we've created the Debian package.
 
 == Version History
 
-* dev :: Creation
+* v0.1 :: Initial version.
+Works, but not user friendly or configurable.
+Code is also a bit ugly.
+To use, build the project, and then run `timesheet_analyzer`, which will output the generated files in the current directory.
 
 == License
 
-Currently the code / project is not licensed, meaning that it is copyrighted code, etc.
-However, once I've gotten everything working and I'm ready, I plan on GPL'ing it.
-But for now I will focus on implementing it, since that's what really matters.
-If you see this and I haven't GPL'd it yet, please feel free to reach out to me.
+Code (and all other files in this project) is licensed under GNU GPL v3.
 
 == Website
 
 Official Website :: TODO
 
-Github :: TODO (once GPL'd)
+Github :: https://github.com/matcatc/Timesheet-Analyzer
 
