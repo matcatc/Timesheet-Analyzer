@@ -38,7 +38,7 @@ Over the course of these {NumberWeeks} weeks, a total of {TotalHours} hours were
 .Summary of Hours
 [options="header,footer"]
 |===
-| Category | Sum             | Average per Week
+| Category | Sum (hours)     | Average per Week (hours)
 | Labor    | {LaborHours}    | {LaborAvgPerWeek}
 | Sick     | {SickHours}     | {SickAvgPerWeek}
 | Vacation | {VacationHours} | {VacationAvgPerWeek}
